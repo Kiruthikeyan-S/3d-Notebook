@@ -254,6 +254,7 @@ export const ScrapbookCard = ({
         {isSelected && (
           <div className="absolute top-2 right-2 flex items-center gap-1 z-40 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-full text-white shadow-lg">
             <button
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 const newRot = (item.rotation + 15) % 360;
@@ -266,6 +267,7 @@ export const ScrapbookCard = ({
             </button>
             {onEdit && (
               <button
+                onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(item);
@@ -277,6 +279,7 @@ export const ScrapbookCard = ({
               </button>
             )}
             <button
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(item.id);

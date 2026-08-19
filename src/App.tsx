@@ -222,7 +222,6 @@ export default function App() {
   });
 
   const [loginEmail, setLoginEmail] = useState("");
-  const [loginName, setLoginName] = useState("");
   const [loginError, setLoginError] = useState("");
 
   // Settings Modal State
@@ -343,20 +342,37 @@ export default function App() {
     }
   };
 
-  // Handle Account Login
+  // Handle Account Login (Email Only with Account Registry)
   const handleAccountLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail.trim() || !loginEmail.includes("@")) {
+    const cleanEmail = loginEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
       setLoginError("Please enter a valid email address");
       return;
     }
-    if (!loginName.trim()) {
-      setLoginError("Please enter your name");
-      return;
-    }
 
-    setLoginError("");
-    setUser({ email: loginEmail.trim().toLowerCase(), name: loginName.trim() });
+    try {
+      const dbSaved = localStorage.getItem("ai_journal_accounts_db");
+      const accounts: Record<string, UserProfile> = dbSaved ? JSON.parse(dbSaved) : {};
+
+      if (accounts[cleanEmail]) {
+        // Existing account found - Log in directly
+        setLoginError("");
+        setUser(accounts[cleanEmail]);
+      } else {
+        // New account - Auto-register using email prefix as display name
+        const rawPrefix = cleanEmail.split("@")[0];
+        const derivedName = rawPrefix.charAt(0).toUpperCase() + rawPrefix.slice(1);
+        const newUser: UserProfile = { email: cleanEmail, name: derivedName };
+        accounts[cleanEmail] = newUser;
+        localStorage.setItem("ai_journal_accounts_db", JSON.stringify(accounts));
+        setLoginError("");
+        setUser(newUser);
+      }
+    } catch {
+      const rawPrefix = cleanEmail.split("@")[0];
+      setUser({ email: cleanEmail, name: rawPrefix });
+    }
   };
 
   // Handle Sign Out
@@ -365,7 +381,6 @@ export default function App() {
     setActiveBookConfig(null);
     setIsUnlocked(false);
     setLoginEmail("");
-    setLoginName("");
     setIsSettingsOpen(false);
   };
 
@@ -696,7 +711,7 @@ export default function App() {
                 Sign In to Private 3D Journal
               </h1>
               <p className="text-xs text-slate-500">
-                Enter your email and name to personalize your private books.
+                Enter your email address to access or create your private journal account.
               </p>
             </div>
 
@@ -711,20 +726,6 @@ export default function App() {
                     onChange={(e) => setLoginEmail(e.target.value)}
                     placeholder="e.g. user@example.com"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white transition-all font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-700">Your Name / Display Name</label>
-                <div className="relative flex items-center">
-                  <User className="absolute left-3.5 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
-                    value={loginName}
-                    onChange={(e) => setLoginName(e.target.value)}
-                    placeholder="e.g. Kiruthikeyan"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:border-slate-900 focus:bg-white transition-all"
                   />
                 </div>
               </div>
