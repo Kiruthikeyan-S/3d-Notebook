@@ -162,17 +162,28 @@ export const ScrapbookCard = ({
   const itemStartPos = useRef({ x: item.x, y: item.y });
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    // If touching an action button inside the toolbar, don't trigger card drag
+    // If touching an action button inside toolbar, don't drag card
     if ((e.target as HTMLElement).closest("button")) {
       return;
     }
 
     e.stopPropagation();
-    onSelect();
+
+    // FIRST TOUCH: SELECT CARD ONLY (Don't start dragging immediately)
+    if (!isSelected) {
+      onSelect();
+      return;
+    }
+
+    // SUBSEQUENT DRAG: If already selected, enable drag moving
     isDragging.current = true;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     itemStartPos.current = { x: item.x, y: item.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -229,10 +240,6 @@ export const ScrapbookCard = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        if (onEdit) onEdit(item);
-      }}
       style={{
         transform: `translate3d(${item.x}px, ${item.y}px, 0px) rotate(${item.rotation}deg)`,
         zIndex: item.zIndex + (isSelected ? 50 : 0),
@@ -259,7 +266,7 @@ export const ScrapbookCard = ({
           </div>
         )}
 
-        {/* Action Controls for Selected Card (MOVE, EDIT, DELETE) */}
+        {/* Action Controls for Selected Card (ROTATE, EDIT, DELETE) */}
         {isSelected && (
           <div className="absolute top-2 right-2 flex items-center gap-1 z-40 bg-slate-900/95 backdrop-blur-md px-2 py-1 rounded-full text-white shadow-xl">
             <button
@@ -270,7 +277,7 @@ export const ScrapbookCard = ({
                 const newRot = (item.rotation + 15) % 360;
                 onUpdate({ ...item, rotation: newRot });
               }}
-              className="p-1 hover:text-amber-400 transition-colors"
+              className="p-1.5 hover:text-amber-400 transition-colors"
               title="Rotate Item"
             >
               <Move className="w-3.5 h-3.5" />
@@ -284,7 +291,7 @@ export const ScrapbookCard = ({
                   e.stopPropagation();
                   onEdit(item);
                 }}
-                className="p-1 text-cyan-300 hover:text-white bg-cyan-600/60 rounded-full transition-all"
+                className="p-1.5 text-cyan-300 hover:text-white bg-cyan-600/70 hover:bg-cyan-500 rounded-full transition-all"
                 title="Edit Item"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -297,7 +304,7 @@ export const ScrapbookCard = ({
                 e.stopPropagation();
                 onDelete(item.id);
               }}
-              className="p-1 hover:text-rose-400 transition-colors"
+              className="p-1.5 hover:text-rose-400 transition-colors"
               title="Delete Item"
             >
               <Trash2 className="w-3.5 h-3.5" />
