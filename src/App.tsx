@@ -586,11 +586,12 @@ export default function App() {
     itemData: Omit<ScrapbookItem, "id" | "x" | "y" | "zIndex">
   ) => {
     const maxZ = items.reduce((max, i) => Math.max(max, i.zIndex), 0);
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
     const newItem: ScrapbookItem = {
       ...itemData,
       id: `item-${Date.now()}`,
-      x: 90 + Math.floor(Math.random() * 60),
-      y: 100 + Math.floor(Math.random() * 60),
+      x: isMobile ? (15 + Math.floor(Math.random() * 20)) : (90 + Math.floor(Math.random() * 60)),
+      y: 70 + Math.floor(Math.random() * 40),
       zIndex: maxZ + 1,
     };
 
@@ -1169,9 +1170,9 @@ export default function App() {
           onPointerDown={handlePointerDownCanvas}
           onPointerUp={handlePointerUpCanvas}
         >
-          {/* Top Header Navbar (Ultra-Responsive Mobile & Desktop) */}
-          <header className="sticky top-0 z-50 w-full bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800/80 px-3 sm:px-6 py-2.5 flex items-center justify-between shadow-xl gap-2">
-            <div className="flex items-center gap-2 shrink-0">
+          {/* Top Header Navbar (IMAGE 4 CLEANUP: TEXT CLUTTER REMOVED) */}
+          <header className="sticky top-0 z-50 w-full bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xl gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleLockJournal}
                 className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
@@ -1180,7 +1181,7 @@ export default function App() {
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md border border-white/20"
+                className="w-8 h-8 rounded-xl text-white flex items-center justify-center font-bold text-sm shadow-md border border-white/20"
                 style={{ backgroundColor: activeBookConfig.color }}
               >
                 📖
@@ -1188,18 +1189,18 @@ export default function App() {
             </div>
 
             {/* PAGE NAVIGATION CONTROLS */}
-            <div className="flex items-center gap-1 sm:gap-2 bg-zinc-950/90 border border-zinc-800 rounded-2xl p-1 sm:p-1.5 shadow-inner max-w-[55%] sm:max-w-none">
+            <div className="flex items-center gap-2 bg-zinc-950/90 border border-zinc-800 rounded-2xl p-1.5 shadow-inner">
               <button
                 onClick={goToPrevPage}
                 disabled={activePageIndex === 0}
-                className="p-1 sm:p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-white transition-colors shrink-0"
+                className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-white transition-colors"
                 title="Previous Page"
               >
-                <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {/* Compact Page Switcher Indicator */}
-              <div className="flex items-center gap-1 max-w-[120px] sm:max-w-[260px] overflow-x-auto no-scrollbar px-1 py-0.5">
+              {/* Page Switcher Tabs */}
+              <div className="flex items-center gap-1 max-w-[260px] overflow-x-auto no-scrollbar px-1 py-0.5">
                 {pages.map((p, idx) => (
                   <button
                     key={p.id}
@@ -1207,13 +1208,13 @@ export default function App() {
                       setPageDirection(idx > activePageIndex ? 1 : -1);
                       setActivePageIndex(idx);
                     }}
-                    className={`px-2 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-all ${
+                    className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                       idx === activePageIndex
                         ? "bg-amber-600 text-white shadow-md scale-105"
                         : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
                     }`}
                   >
-                    Pg {idx + 1}
+                    Page {idx + 1}
                   </button>
                 ))}
               </div>
@@ -1221,73 +1222,73 @@ export default function App() {
               <button
                 onClick={goToNextPage}
                 disabled={activePageIndex === pages.length - 1}
-                className="p-1 sm:p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-white transition-colors shrink-0"
+                className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-white transition-colors"
                 title="Next Page"
               >
-                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ChevronRight className="w-4 h-4" />
               </button>
 
-              <div className="w-px h-4 sm:h-5 bg-zinc-800 mx-0.5 sm:mx-1 shrink-0" />
+              <div className="w-px h-5 bg-zinc-800 mx-1" />
 
               {/* Add New Page Button */}
               <button
                 onClick={handleAddNewPage}
-                className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold transition-all shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold transition-all"
                 title="Create a new page in this journal"
               >
                 <FilePlus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">+ Add Page</span>
+                <span>+ Add Page</span>
               </button>
             </div>
 
             {/* Right Action Buttons */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-2">
               {pages.length > 1 && (
                 <button
                   onClick={handleDeleteCurrentPage}
-                  className="p-1.5 sm:p-2 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 text-xs transition-colors"
+                  className="p-2 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 text-xs transition-colors"
                   title="Delete Current Page"
                 >
-                  <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
 
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-1.5 sm:p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs transition-colors"
+                className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs transition-colors"
                 title="Settings & Passwords"
               >
-                <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Settings className="w-4 h-4" />
               </button>
 
               {/* Lock Journal & Return to 3D Books Showcase */}
               <button
                 onClick={handleLockJournal}
-                className="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1 shadow-md transition-all border border-amber-500/40"
+                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md transition-all border border-amber-500/40"
               >
                 <Lock className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Lock Journal</span>
+                <span>Lock Journal</span>
               </button>
             </div>
           </header>
 
           {/* OPEN LEATHER BOOK STAGE */}
-          <div className="p-2 sm:p-6 w-full max-w-6xl flex justify-center items-center my-auto [perspective:1200px]">
+          <div className="p-4 sm:p-8 w-full max-w-6xl flex justify-center items-center my-auto [perspective:1200px]">
             {/* Outer Leather Hardcover Wrapping */}
             <div
-              className="relative w-full max-w-[940px] min-h-[520px] sm:min-h-[640px] rounded-[1.8rem] sm:rounded-[2.5rem] p-2.5 sm:p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border flex justify-center items-center"
+              className="relative w-full max-w-[940px] min-h-[640px] rounded-[2.5rem] p-3 sm:p-5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border flex justify-center items-center"
               style={{ backgroundColor: activeBookConfig.color, borderColor: `${activeBookConfig.color}dd` }}
             >
               {/* Page Ribbon Bookmark */}
-              <div className="absolute top-0 right-6 sm:right-16 w-5 sm:w-6 h-20 sm:h-28 bg-amber-800/90 shadow-lg rounded-b-md z-30 flex items-end justify-center pb-1.5 border-x border-b border-amber-900/60 pointer-events-none">
-                <BookMarked className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-200" />
+              <div className="absolute top-0 right-16 w-6 h-28 bg-amber-800/90 shadow-lg rounded-b-md z-30 flex items-end justify-center pb-2 border-x border-b border-amber-900/60 pointer-events-none">
+                <BookMarked className="w-4 h-4 text-amber-200" />
               </div>
 
               {/* Leather Edge Stitching Effect */}
-              <div className="absolute inset-1.5 sm:inset-2 rounded-[1.5rem] sm:rounded-[2rem] border border-dashed border-white/20 pointer-events-none" />
+              <div className="absolute inset-2 rounded-[2rem] border border-dashed border-white/20 pointer-events-none" />
 
               {/* Stacked Paper Pages Edge */}
-              <div className="relative w-full h-full min-h-[490px] sm:min-h-[600px] bg-[#f2ebd9] rounded-xl sm:rounded-2xl shadow-inner flex overflow-hidden border border-[#d9ceb5]">
+              <div className="relative w-full h-full min-h-[600px] bg-[#f2ebd9] rounded-2xl shadow-inner flex overflow-hidden border border-[#d9ceb5]">
                 {/* 3D Page Flip Animated Spread */}
                 <AnimatePresence mode="wait" custom={pageDirection}>
                   <motion.div
@@ -1298,7 +1299,7 @@ export default function App() {
                     animate="center"
                     exit="exit"
                     transition={{ duration: 0.4, ease: "easeInOut" }}
-                    className="w-full h-full min-h-[490px] sm:min-h-[600px] bg-[#faf6ee] relative flex [transform-style:preserve-3d]"
+                    className="w-full h-full min-h-[600px] bg-[#faf6ee] relative flex [transform-style:preserve-3d]"
                     style={{
                       backgroundImage:
                         "linear-gradient(transparent 27px, #e6ded0 28px)",
@@ -1306,27 +1307,29 @@ export default function App() {
                     }}
                   >
                     {/* Page Header (Clean Mobile & Desktop Layout - Zero Overlap) */}
-                    <div className="absolute top-3 left-3 right-12 sm:right-24 text-[10px] font-mono text-stone-500 tracking-widest pointer-events-none flex items-center justify-between z-10">
-                      <div className="truncate max-w-[55%]">
-                        <span className="font-bold text-amber-950">{user.name.toUpperCase()}'S JOURNAL</span>
+                    <div className="absolute top-3 left-4 right-4 text-[10px] font-mono text-stone-400 tracking-widest pointer-events-none flex items-center justify-between z-10">
+                      <div className="truncate max-w-[48%]">
+                        <span className="hidden sm:inline">JOURNAL OF: </span>
+                        <span className="font-bold text-amber-900">{user.name.toUpperCase()}</span>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="font-bold text-amber-900/90 bg-amber-100/90 px-2 py-0.5 rounded border border-amber-300/60 shadow-xs">
-                          PAGE {activePageIndex + 1} / {pages.length}
+                        <span className="hidden md:inline">DATE: ________</span>
+                        <span className="font-bold text-amber-800/80 bg-amber-100/60 px-2 py-0.5 rounded border border-amber-200/50">
+                          PAGE {activePageIndex + 1} OF {pages.length}
                         </span>
                       </div>
                     </div>
 
-                    {/* Center Spine Crease / Binding Fold Shadow */}
-                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 sm:w-12 bg-gradient-to-r from-black/15 via-black/5 to-black/15 pointer-events-none z-10 border-x border-black/5" />
+                    {/* Center Spine Crease / Binding Fold Shadow (Desktop 2-Page View Only, Hidden on Mobile Single Page) */}
+                    <div className="hidden sm:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-12 bg-gradient-to-r from-black/15 via-black/5 to-black/15 pointer-events-none z-10 border-x border-black/5" />
 
                     {/* Canvas Items Container */}
-                    <div className="relative w-full h-full min-h-[490px] sm:min-h-[600px]">
+                    <div className="relative w-full h-full min-h-[600px]">
                       {items.length === 0 && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400 gap-3 pointer-events-none z-0">
-                          <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 opacity-30" />
-                          <p className="text-xs font-medium text-stone-500 px-4 text-center">
+                          <BookOpen className="w-12 h-12 opacity-30" />
+                          <p className="text-xs font-medium text-stone-500">
                             Page {activePageIndex + 1} is blank. Tap "+" below to add notes!
                           </p>
                         </div>

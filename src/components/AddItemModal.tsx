@@ -93,6 +93,8 @@ export const AddItemModal = ({
     e.preventDefault();
     const formattedDate = `${dateStr} • ${timeStr}`;
 
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+
     if (editItem && onUpdateItem) {
       if (activeTab === "note") {
         onUpdateItem({
@@ -114,7 +116,7 @@ export const AddItemModal = ({
       if (activeTab === "note") {
         onAddItem({
           type: "note",
-          width: paperStyle.startsWith("sticky") ? 210 : 240,
+          width: isMobile ? 185 : (paperStyle.startsWith("sticky") ? 210 : 240),
           rotation: Math.floor(Math.random() * 12) - 6,
           paperStyle,
           title: title.trim() || "Untitled Note",
@@ -126,7 +128,7 @@ export const AddItemModal = ({
       } else {
         onAddItem({
           type: "photo",
-          width: 220,
+          width: isMobile ? 185 : 220,
           rotation: Math.floor(Math.random() * 14) - 7,
           paperStyle: "polaroid",
           title: photoCaption.trim() || "Captured Moment",
