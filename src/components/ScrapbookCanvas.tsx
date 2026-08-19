@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Trash2, Move, Sparkles } from "lucide-react";
+import React, { useRef } from "react";
+import { Trash2, Move, Sparkles, Pencil } from "lucide-react";
 
 export type PaperStyle =
   | "sticky-yellow"
@@ -98,19 +98,21 @@ export const RenderAttachment = ({
     }
 
     if (t.startsWith("pushpin")) {
-      const pinColor = t === "pushpin-yellow" ? "#eab308" : "#ef4444";
+      const fillMap: Record<string, string> = {
+        "pushpin-red": "#ef4444",
+        "pushpin-yellow": "#eab308",
+      };
+      const fillColor = fillMap[t] || "#ef4444";
 
       return (
-        <div key={key} className={`absolute z-30 pointer-events-none flex flex-col items-center ${customClass}`}>
-          {/* Pushpin Head */}
-          <div
-            className="w-5 h-5 rounded-full shadow-lg border border-white/40 flex items-center justify-center"
-            style={{ backgroundColor: pinColor }}
-          >
-            <div className="w-2 h-2 rounded-full bg-white/60" />
+        <div key={key} className={`absolute z-30 pointer-events-none ${customClass}`}>
+          <div className="relative flex items-center justify-center">
+            <div
+              className="w-4 h-4 rounded-full shadow-md border-2 border-white/60"
+              style={{ backgroundColor: fillColor }}
+            />
+            <div className="absolute w-1.5 h-1.5 rounded-full bg-white/70 top-0.5 left-0.5" />
           </div>
-          {/* Pin Shadow */}
-          <div className="w-1.5 h-3 bg-black/30 blur-[1px] transform rotate-45 -mt-1 -ml-2" />
         </div>
       );
     }
@@ -118,69 +120,71 @@ export const RenderAttachment = ({
     return null;
   };
 
+  if (position === "top-left") {
+    return renderSingleAttachment(type, "tl", "-top-3 -left-3");
+  }
+  if (position === "top-right") {
+    return renderSingleAttachment(type, "tr", "-top-3 -right-3");
+  }
+  if (position === "top-center") {
+    return renderSingleAttachment(type, "tc", "-top-3 left-1/2 -translate-x-1/2");
+  }
   if (position === "both-corners") {
     return (
       <>
-        {renderSingleAttachment(type, "left", "-top-3 -left-3")}
-        {renderSingleAttachment(type, "right", "-top-3 -right-3")}
+        {renderSingleAttachment(type, "tl", "-top-3 -left-3")}
+        {renderSingleAttachment(type, "tr", "-top-3 -right-3")}
       </>
     );
   }
 
-  const posClass =
-    position === "top-left"
-      ? "-top-3 -left-2"
-      : position === "top-right"
-      ? "-top-3 -right-2"
-      : "-top-4 left-1/2 -translate-x-1/2";
-
-  return renderSingleAttachment(type, "single", posClass);
+  return null;
 };
 
-// Scrapbook Single Card Component
+// Interactive Scrapbook Card Component
 export const ScrapbookCard = ({
   item,
   isSelected,
   onSelect,
   onUpdate,
   onDelete,
+  onEdit,
 }: {
   item: ScrapbookItem;
   isSelected: boolean;
   onSelect: () => void;
   onUpdate: (updated: ScrapbookItem) => void;
   onDelete: (id: string) => void;
+  onEdit?: (item: ScrapbookItem) => void;
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef({ x: 0, y: 0, itemX: 0, itemY: 0 });
+  const isDragging = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const itemStartPos = useRef({ x: item.x, y: item.y });
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
     onSelect();
-    setIsDragging(true);
-    dragStart.current = {
-      x: e.clientX,
-      y: e.clientY,
-      itemX: item.x,
-      itemY: item.y,
-    };
+    isDragging.current = true;
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    itemStartPos.current = { x: item.x, y: item.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStartPos.current.x;
+    const dy = e.clientY - dragStartPos.current.y;
+
     onUpdate({
       ...item,
-      x: dragStart.current.itemX + dx,
-      y: dragStart.current.itemY + dy,
+      x: itemStartPos.current.x + dx,
+      y: itemStartPos.current.y + dy,
     });
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (isDragging) {
-      setIsDragging(false);
+    if (isDragging.current) {
+      isDragging.current = false;
       try {
         (e.target as HTMLElement).releasePointerCapture(e.pointerId);
       } catch {
@@ -189,7 +193,7 @@ export const ScrapbookCard = ({
     }
   };
 
-  // Determine Paper Style Class & Texture
+  // Get paper style classes based on paperStyle type
   const getPaperStyleClasses = () => {
     switch (item.paperStyle) {
       case "sticky-yellow":
@@ -246,7 +250,7 @@ export const ScrapbookCard = ({
           </div>
         )}
 
-        {/* Action Controls for Selected Card */}
+        {/* Action Controls for Selected Card (MOVE, EDIT, DELETE) */}
         {isSelected && (
           <div className="absolute top-2 right-2 flex items-center gap-1 z-40 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-full text-white shadow-lg">
             <button
@@ -260,6 +264,18 @@ export const ScrapbookCard = ({
             >
               <Move className="w-3.5 h-3.5" />
             </button>
+            {onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(item);
+                }}
+                className="p-1 hover:text-cyan-400 transition-colors"
+                title="Edit Item"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();

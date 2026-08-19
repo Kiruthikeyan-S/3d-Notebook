@@ -268,6 +268,7 @@ export default function App() {
   const [pageDirection, setPageDirection] = useState<number>(1);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ScrapbookItem | null>(null);
 
   // Active Page & Items
   const currentPage = pages[activePageIndex] || pages[0];
@@ -1251,17 +1252,19 @@ export default function App() {
                       backgroundSize: "100% 28px",
                     }}
                   >
-                    {/* Left Page Header DATE & Personalization */}
-                    <div className="absolute top-4 left-6 text-[10px] font-mono text-stone-400 tracking-widest pointer-events-none">
-                      JOURNAL OF: <span className="font-bold text-amber-900">{user.name.toUpperCase()}</span>
-                    </div>
+                    {/* Page Header (Clean Mobile & Desktop Layout - Zero Overlap) */}
+                    <div className="absolute top-3 left-4 right-4 text-[10px] font-mono text-stone-400 tracking-widest pointer-events-none flex items-center justify-between z-10">
+                      <div className="truncate max-w-[48%]">
+                        <span className="hidden sm:inline">JOURNAL OF: </span>
+                        <span className="font-bold text-amber-900">{user.name.toUpperCase()}</span>
+                      </div>
 
-                    {/* Right Page Header DATE & Page Number */}
-                    <div className="absolute top-4 right-6 text-[10px] font-mono text-stone-400 tracking-widest pointer-events-none flex items-center gap-4">
-                      <span>DATE: ________________</span>
-                      <span className="font-bold text-amber-800/80 bg-amber-100/60 px-2 py-0.5 rounded border border-amber-200/50">
-                        PAGE {activePageIndex + 1} OF {pages.length}
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="hidden md:inline">DATE: ________</span>
+                        <span className="font-bold text-amber-800/80 bg-amber-100/60 px-2 py-0.5 rounded border border-amber-200/50">
+                          PAGE {activePageIndex + 1} OF {pages.length}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Center Spine Crease / Binding Fold Shadow */}
@@ -1287,6 +1290,7 @@ export default function App() {
                           onSelect={() => setSelectedItemId(item.id)}
                           onUpdate={handleUpdateItem}
                           onDelete={handleDeleteItem}
+                          onEdit={(itemToEdit) => setEditingItem(itemToEdit)}
                         />
                       ))}
                     </div>
@@ -1299,7 +1303,10 @@ export default function App() {
           {/* FLOATING ACTION "+" PLUS BUTTON (Bottom Right) */}
           <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setEditingItem(null);
+                setIsAddModalOpen(true);
+              }}
               className="w-14 h-14 rounded-full text-white shadow-2xl flex items-center justify-center border-2 border-white/40 hover:scale-110 active:scale-95 transition-all group"
               style={{ backgroundColor: activeBookConfig.color }}
               title="Add Note Paper, Photo Frame, or Accessories to Current Page"
@@ -1308,11 +1315,16 @@ export default function App() {
             </button>
           </div>
 
-          {/* ADD ITEM MODAL DRAWER */}
+          {/* ADD / EDIT ITEM MODAL DRAWER */}
           <AddItemModal
-            isOpen={isAddModalOpen}
-            onClose={() => setIsAddModalOpen(false)}
+            isOpen={isAddModalOpen || !!editingItem}
+            onClose={() => {
+              setIsAddModalOpen(false);
+              setEditingItem(null);
+            }}
             onAddItem={handleAddItem}
+            editItem={editingItem}
+            onUpdateItem={handleUpdateItem}
           />
         </div>
       )}
