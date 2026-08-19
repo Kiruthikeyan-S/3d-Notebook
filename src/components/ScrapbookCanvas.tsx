@@ -162,6 +162,11 @@ export const ScrapbookCard = ({
   const itemStartPos = useRef({ x: item.x, y: item.y });
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    // If touching an action button inside the toolbar, don't trigger card drag
+    if ((e.target as HTMLElement).closest("button")) {
+      return;
+    }
+
     e.stopPropagation();
     onSelect();
     isDragging.current = true;
@@ -224,6 +229,10 @@ export const ScrapbookCard = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        if (onEdit) onEdit(item);
+      }}
       style={{
         transform: `translate3d(${item.x}px, ${item.y}px, 0px) rotate(${item.rotation}deg)`,
         zIndex: item.zIndex + (isSelected ? 50 : 0),
@@ -252,8 +261,9 @@ export const ScrapbookCard = ({
 
         {/* Action Controls for Selected Card (MOVE, EDIT, DELETE) */}
         {isSelected && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 z-40 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-full text-white shadow-lg">
+          <div className="absolute top-2 right-2 flex items-center gap-1 z-40 bg-slate-900/95 backdrop-blur-md px-2 py-1 rounded-full text-white shadow-xl">
             <button
+              type="button"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -267,18 +277,21 @@ export const ScrapbookCard = ({
             </button>
             {onEdit && (
               <button
+                type="button"
                 onPointerDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(item);
                 }}
-                className="p-1 hover:text-cyan-400 transition-colors"
+                className="p-1 text-cyan-300 hover:text-white bg-cyan-600/60 rounded-full transition-all"
                 title="Edit Item"
               >
                 <Pencil className="w-3.5 h-3.5" />
               </button>
             )}
             <button
+              type="button"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
